@@ -38,10 +38,16 @@ int main(int argc, char** argv){
 	int connect = 4;
 	int i;
 
+	//debug
+	printf("\nEntered main");
+	
 	srand(time(NULL));
 
 	setup(argc, argv, &arguments);
 
+	//debug
+	printf("Exited startup");
+	
 	if (arguments.square != 0){
 		width = arguments.square;
 		height = arguments.square;
@@ -51,13 +57,22 @@ int main(int argc, char** argv){
 		if (arguments.height != 0)
 			height = arguments.height;
 	}
+	
+	//debug
+	printf("\nbefore arguments.connect call");
 
 	if (arguments.connect != 0)
 		connect = arguments.connect;
 
+	//debug
+	printf("\n%d", connect);
+	printf("\nWidth %d  Height %d  Connect %d", width, height, connect);
+	printf("\nTestline");
+	printf("Is connect > width? %d", connect > width);
+	
 	if(connect > width && connect > height){
-		printf("A %d-piece long string will not fit on a %d by %d size board. Nobody can win!", connect, width, height);
-		cleanup(gameBoard, height, userInput);
+		clearScreen();
+		printf("A %d-piece long string will not fit on a %d by %d size board. Nobody can win!\n\n\n", connect, width, height);
 		return 0;
 	}
 
@@ -163,7 +178,7 @@ void validateUserInput(char* p_userInput, int width, char** gameBoard){
 		printf("Column is full. Please choose another.\n\n");
 		
 		printf("\n\nEnter column number where you'd like to drop your piece\n(Enter 'q' to quit)\n");
-		scanf("%c", p_userInput);
+		scanf(" %s", p_userInput);
 	}
 	//debug
 	//printf("Made it out of while loop");
@@ -371,6 +386,9 @@ void drawBoard(char** gameBoard, int width, int height){
 	int i, j;
 	int padding = 38 - width;
 
+	if (padding < 0)
+		padding = 0;
+
 	printf("\n\n");
 	printf("  _|_|_|                                                      _|      _|  _|\n");
 	printf("_|          _|_|    _|_|_|    _|_|_|      _|_|      _|_|_|  _|_|_|_|  _|  _|\n");
@@ -380,7 +398,13 @@ void drawBoard(char** gameBoard, int width, int height){
 
 	printPadding(padding, width);
 	for (i=0; i<width; i++){
+		if (i == 10)
+			break;
 		printf(" %d", i+1);
+	}
+
+	for (; i<width; i++){
+		printf("%d", i+1);
 	}
 
 	printf("\n");
@@ -402,7 +426,13 @@ void drawBoard(char** gameBoard, int width, int height){
 	}
 
 	for (i=0; i<width; i++){
+		if (i == 10)
+			break;
 		printf(" %d", i+1);
+	}
+
+	for (; i<width; i++){
+		printf("%d", i+1);
 	}
 }
 
