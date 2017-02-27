@@ -8,7 +8,7 @@ void clearScreen();
 
 void validateUserInput(char* userInput, int width, char** gameBoard);
 
-void userMove(char p_userInput, char** gameBoard, int height);
+void userMove(char* p_userInput, char** gameBoard, int height);
 
 int isValidMove(char** gameBoard, int width, int column);
 
@@ -18,7 +18,7 @@ void checkIfSomebodyWon(char** gameBoard, int width, int height, int* userWon, i
 
 void resetBoard(char** gameBoard, int width, int height);
 
-void cleanup(char** gameBoard, int height);
+void cleanup(char** gameBoard, int height, char* userInput);
 
 void drawBoard(char** gameBoard, int width, int height);
 
@@ -29,7 +29,7 @@ void printPadding(int padding, int width);
 
 int main(int argc, char** argv){
 	struct arguments arguments;
-	char userInput = 'x';
+	char* userInput = (char*)malloc(sizeof(char)*10);
 	char** gameBoard;
 	int userWon = 0;
 	int computerWon = 0;
@@ -57,7 +57,7 @@ int main(int argc, char** argv){
 
 	if(connect > width && connect > height){
 		printf("A %d-piece long string will not fit on a %d by %d size board. Nobody can win!", connect, width, height);
-		cleanup(gameBoard, height);
+		cleanup(gameBoard, height, userInput);
 		return 0;
 	}
 
@@ -70,8 +70,10 @@ int main(int argc, char** argv){
 	printf("GameBoard: w=%d, h=%d, c=%d\n\n\n", width, height, connect);
 
 	resetBoard(gameBoard, width, height);
+	
+	*userInput = 'x';
 
-	while (userInput != 'n'){
+	while (*userInput != 'n'){
 		clearScreen();
 		if (userWon || computerWon){
 			resetBoard(gameBoard, width, height);
@@ -80,17 +82,17 @@ int main(int argc, char** argv){
 		}
 		drawBoard(gameBoard, width, height);
 		printf("\n\nEnter column number where you'd like to drop your piece\n(Enter 'q' to quit)\n");
-		scanf(" %c", &userInput);
+		scanf(" %s", userInput);
 
 		//debug
 		//printf("\nUser input: %c\n", userInput);
-		validateUserInput(&userInput, width, gameBoard);
+		validateUserInput(userInput, width, gameBoard);
 
 		//debug
 		//printf("\nReturned to main");
 
-		if (userInput == 'q'){
-			cleanup(gameBoard, height);
+		if (*userInput == 'q'){
+			cleanup(gameBoard, height, userInput);
 			return 0;
 		}
 		
@@ -108,7 +110,7 @@ int main(int argc, char** argv){
 			drawBoard(gameBoard, width, height);
 			printf("\n\n  You win!");
 			printf("\n\nWould you like to play again? (y or n)");
-			scanf(" %c", &userInput);
+			scanf(" %s", userInput);
 		}
 		if (computerWon){
 			clearScreen();
@@ -116,14 +118,14 @@ int main(int argc, char** argv){
 			printf("\n\n  You lose...");
 			printf("\n\n  You win!");
 			printf("\n\nWould you like to play again? (y or n)");
-			scanf(" %c", &userInput);
+			scanf(" %s", userInput);
 		}
 		if (boardFull(gameBoard, width, height)){
 			clearScreen();
 			drawBoard(gameBoard, width, height);
 			printf("\n\n  Tie game!");
 			printf("\n\nWould you like to play again? (y or n)");
-			scanf(" %c", &userInput);
+			scanf(" %s", userInput);
 		}
 	}
 
@@ -149,8 +151,9 @@ void validateUserInput(char* p_userInput, int width, char** gameBoard){
 		//debug
 		//printf("\nInside while loop");
 
-		userInput = (int)(c_userInput - '0');
+		//userInput = (int)(c_userInput - '0');
 
+		userInput = (int)atoi(p_userInput);
 		//debug
 		//printf("int user unput: %d", userInput);
 
@@ -166,8 +169,9 @@ void validateUserInput(char* p_userInput, int width, char** gameBoard){
 	//printf("Made it out of while loop");
 }
 
-void userMove(char p_userInput, char** gameBoard, int height){
-	int userInput = (int)(p_userInput - '0');	
+void userMove(char* p_userInput, char** gameBoard, int height){
+	//int userInput = (int)(p_userInput - '0');	
+	int userInput = (int)atoi(p_userInput);
 	int h;
 	
 	//debug
@@ -353,12 +357,13 @@ void resetBoard(char** gameBoard, int width, int height){
 	}
 }
 
-void cleanup(char** gameBoard, int height){
+void cleanup(char** gameBoard, int height, char* userInput){
 	int h;
 	for (h=0; h<height; h++){
 		free(gameBoard[h]);
 	}
 	free(gameBoard);
+	free(userInput);
 	return;
 }
 
