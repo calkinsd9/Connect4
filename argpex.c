@@ -2,7 +2,7 @@
 #include "handle_arguments.h"
 #include <stdlib.h>
 #include <time.h>
-
+#include "file_utils.h"
 
 void clearScreen();
 
@@ -26,6 +26,8 @@ int boardFull(char** gameBoard, int width, int height);
 
 void printPadding(int padding, int width);
 
+void saveGame(char* filename, int width, int height, int connect, char** gameBoard);
+
 
 int main(int argc, char** argv){
 	struct arguments arguments;
@@ -36,6 +38,9 @@ int main(int argc, char** argv){
 	int width = 7;
 	int height = 7; 
 	int connect = 4;
+	char* filename;
+	char* saveFile;
+	char saveFileName[] = "Connect4SaveFile.txt";
 	int i;
 
 	//debug
@@ -48,22 +53,30 @@ int main(int argc, char** argv){
 	//debug
 	printf("Exited startup");
 	
-	if (arguments.square != 0){
-		width = arguments.square;
-		height = arguments.square;
-	} else {
-		if (arguments.width != 0)
-			width = arguments.width;
-		if (arguments.height != 0)
-			height = arguments.height;
-	}
+	filename = arguments.load;
+
+	printf("\n\n%s", filename);
 	
-	//debug
-	printf("\nbefore arguments.connect call");
+	if (filename != NULL){
+		//load game
+		//TODO implement load game. figure out read_file method
+	} else {
+		if (arguments.square != 0){
+			width = arguments.square;
+			height = arguments.square;
+		} else {
+			if (arguments.width != 0)
+				width = arguments.width;
+			if (arguments.height != 0)
+				height = arguments.height;
+		}
+	
+		//debug
+		printf("\nbefore arguments.connect call");
 
-	if (arguments.connect != 0)
-		connect = arguments.connect;
-
+		if (arguments.connect != 0)
+			connect = arguments.connect;
+	}
 	//debug
 	printf("\n%d", connect);
 	printf("\nWidth %d  Height %d  Connect %d", width, height, connect);
@@ -89,7 +102,7 @@ int main(int argc, char** argv){
 	*userInput = 'x';
 
 	while (*userInput != 'n'){
-		clearScreen();
+//		clearScreen();
 		if (userWon || computerWon){
 			resetBoard(gameBoard, width, height);
 			userWon = 0;
@@ -109,6 +122,13 @@ int main(int argc, char** argv){
 		if (*userInput == 'q'){
 			cleanup(gameBoard, height, userInput);
 			return 0;
+		}
+
+		if (*userInput == 's'){
+			saveGame(saveFileName, width, height, connect, gameBoard);
+			printf("\n\nYour game has been saved in the file %s\n\nType 'c' to continue...", saveFileName);
+			scanf(" %s", userInput);
+			continue;
 		}
 		
 		userMove(userInput, gameBoard, height);
@@ -160,7 +180,7 @@ void validateUserInput(char* p_userInput, int width, char** gameBoard){
 	while (1){
 		c_userInput = *p_userInput;
 
-		if (c_userInput == 'q')
+		if (c_userInput == 'q' || c_userInput == 's')
 			return;
 
 		//debug
@@ -455,4 +475,59 @@ int boardFull(char** gameBoard, int width, int height){
 	return 1;
 }
 
+void saveGame(char* filename, int width, int height, int connect, char** gameBoard){
+	int i, j, k;
+	char* buffer;
+	int w = width;
+	int h = height;
+	int c = connect;
 
+	//malloc the file contents
+	buffer = (char*)malloc(sizeof(char) * ( (height * width) + 20));
+
+	//index
+	i = 0;
+	do {
+		buffer[i] = (char)((w % 10) + '0');
+		i++;
+		w = w / 10;
+	} while (w != 0);
+
+	buffer[i] = ' ';
+	i++;
+
+	do {
+		buffer[i] = (char)((h % 10) + '0');
+		i++;
+		h = h / 10;
+	} while (h != 0);
+
+	buffer[i] = ' ';
+	i++;
+
+	do {
+		buffer[i] = (char)((c % 10) + '0');
+		i++;
+		c = c / 10;
+	} while (c != 0);
+
+	buffer[i] = ' ';
+	i++;
+
+	for (j=0; j<height; j++){
+		for (k=0; k<width; k++){
+			buffer[i] = gameBoard[k][j];
+			i++;
+		}
+	}
+
+	buffer[i] = '\0';
+	
+	printf("\n\n\n");
+	for (i=0; i<20; i++){
+		printf("%c", buffer[i]);
+	}
+	printf("\n\n\n");
+
+	write_file(filename, buffer, ((height * width) + 20));
+}	
