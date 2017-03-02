@@ -590,11 +590,12 @@ int power(int x, int y){
 
 void saveGame(char* filename, int width, int height, int connect, char** gameBoard){
 
-	int i, j, k, back, index;
+	int i, j, k, back, index, pow;
 	char* buffer;
 	int w = width;
 	int h = height;
-	int c = connect;
+	int con = connect;
+	char c;
 
 	//debug
 	printf("\nEntered SaveGame");
@@ -606,58 +607,67 @@ void saveGame(char* filename, int width, int height, int connect, char** gameBoa
 
 	//debug
 	printf("\nW:%d H:%d C:%d", w, h, c);
+
 	//width
-	i = 0;
-	do {
+	pow = 0;
+	while (w / 10 != 0){
+		pow++;
+		w = w / 10;
+	}
+	w = width;
+	while (pow >= 0){
+		c = (w / power(10,pow)) + 48;
+		buffer[index] = c;
 		//debug
-		printf("\nBuffer is %c", buffer[index]);
-		back = w%10;
-		buffer[index]=(back*power(10,i)+48);
-		//debug
-		printf("\nBuffer is now %c", buffer[index]);
+		printf("\nNew pow function. Buffer[%d] is %c", index, buffer[index]);
+		w -= (c - 48) * power(10,pow);
+		pow--;
 		index++;
-		i++;
-		w = w/10;
-	} while (w / 10 != 0);
+	}
 	buffer[index] = ' ';
 	index++;
-	i = 0;
+	pow = 0;
 
 
 	//height
-	i = 0;
-	do {
+	pow = 0;
+	while (h / 10 != 0){
+		pow++;
+		h = h / 10;
+	}
+	h = height;
+	while (pow >= 0){
+		c = (h / power(10,pow)) + 48;
+		buffer[index] = c;
 		//debug
-		printf("\nBuffer is %c", buffer[index]);
-		back = h%10;
-		buffer[index]=(back*power(10,i)+48);
-		//debug
-		printf("\nBuffer is now %c", buffer[index]);
+		printf("\nNew pow function. Buffer[%d] is %c", index, buffer[index]);
+		h -= (c - 48) * power(10,pow);
+		pow--;
 		index++;
-		i++;
-		h = h/10;
-	} while (h / 10 != 0);
+	}
 	buffer[index] = ' ';
 	index++;
-	i = 0;
+	pow = 0;
 
 
 	//connect
-	i = 0;
-	do {
+	pow = 0;
+	while (con / 10 != 0){
+		pow++;
+		con = con / 10;
+	}
+	con = connect;
+	while (pow >= 0){
+		c = (con / power(10,pow)) + 48;
+		buffer[index] = c;
 		//debug
-		printf("\nBuffer is %c", buffer[index]);
-		back = c%10;
-		buffer[index]=(back*power(10,i)+48);
-		//debug
-		printf("\nBuffer is now %c", buffer[index]);
+		printf("\nNew pow function. Buffer[%d] is %c", index, buffer[index]);
+		con -= (c - 48) * power(10,pow);
+		pow--;
 		index++;
-		i++;
-		c = c/10;
-	} while (c / 10 != 0);
+	}
 	buffer[index] = ' ';
 	index++;
-	i = 0;
 
 	for (j=0; j<height; j++){
 		for (k=0; k<width; k++){
