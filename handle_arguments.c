@@ -1,17 +1,16 @@
 #include <stdlib.h>
 #include "handle_arguments.h"
 
-const char* argp_program_version = "testing";
-const char* argp_program_bug_address = "test@test.com";
-char doc[] = "test doc string";
+const char* argp_program_version = "1.5.0";
+const char* argp_program_bug_address = "calkinda@mail.gvsu.edu";
+char doc[] = "Connect 4";
 char args_doc[] = "";
 
 struct argp_option options[] = {
 	{"width", 'w', "WIDTH", 0, "sets the width of the board"},
 	{"height", 'h', "HEIGHT", 0, "sets the height of the board"},
-	{"square", 's', "SQUARE", 0, "sets the square of the board"},
-	{"connect", 'c', "CONNECT", 0, "sets the connect of the board"},
-	{"width", 'w', "WIDTH", 0, "sets the width of the board"},
+	{"square", 's', "SQUARE", 0, "sets the width and height of a square board"},
+	{"connect", 'c', "CONNECT", 0, "sets the number of spaces needed to win"},
 	{"load", 'l', "FILE", 0, "load a game"},
 	{ 0 }
 };
@@ -58,7 +57,8 @@ void setup(int argc, char** argv, struct arguments* arguments_main){
 	square = arguments.square;
 	connect = arguments.connect;
 
-	printf("width: %d\nheight: %d\nsquare: %d\nconnect: %d\n\n", width, height, square, connect);
+	//debug
+	//printf("width: %d\nheight: %d\nsquare: %d\nconnect: %d\n\n", width, height, square, connect);
 
 	if(arguments.load != NULL){
 		printf("oad file: %s\n\n", arguments.load);
