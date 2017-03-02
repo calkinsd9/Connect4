@@ -604,35 +604,60 @@ void saveGame(char* filename, int width, int height, int connect, char** gameBoa
 
 	index = 0;
 
+	//debug
+	printf("\nW:%d H:%d C:%d", w, h, c);
 	//width
-	for(i=0; (w/10)!=0; i++){
+	i = 0;
+	do {
+		//debug
+		printf("\nBuffer is %c", buffer[index]);
 		back = w%10;
 		buffer[index]=(back*power(10,i)+48);
+		//debug
+		printf("\nBuffer is now %c", buffer[index]);
 		index++;
+		i++;
 		w = w/10;
-	}
+	} while (w / 10 != 0);
 	buffer[index] = ' ';
 	index++;
+	i = 0;
+
 
 	//height
-	for(i=0; (h/10)!=0; i++){
+	i = 0;
+	do {
+		//debug
+		printf("\nBuffer is %c", buffer[index]);
 		back = h%10;
 		buffer[index]=(back*power(10,i)+48);
+		//debug
+		printf("\nBuffer is now %c", buffer[index]);
 		index++;
+		i++;
 		h = h/10;
-	}
+	} while (h / 10 != 0);
 	buffer[index] = ' ';
 	index++;
+	i = 0;
+
 
 	//connect
-	for(i=0; (c/10)!=0; i++){
+	i = 0;
+	do {
+		//debug
+		printf("\nBuffer is %c", buffer[index]);
 		back = c%10;
 		buffer[index]=(back*power(10,i)+48);
+		//debug
+		printf("\nBuffer is now %c", buffer[index]);
 		index++;
+		i++;
 		c = c/10;
-	}
+	} while (c / 10 != 0);
 	buffer[index] = ' ';
 	index++;
+	i = 0;
 
 	for (j=0; j<height; j++){
 		for (k=0; k<width; k++){
