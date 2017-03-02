@@ -28,6 +28,9 @@ int read_file(char* filename, char** buffer){
 int write_file(char* filename, char* buffer, int size){
 	FILE* ptr_file;
 	int i;
+	
+	//debug
+	printf("\nSize is %d", size);
 
 	ptr_file = fopen(filename, "w");
 
@@ -37,8 +40,12 @@ int write_file(char* filename, char* buffer, int size){
 	}
 
 	for (i = 0; i<size; i++){
+		//debug
+		printf("\nNow putting char %c", buffer[i]);
 		fputc( (int)buffer[i], ptr_file);
 	}
+
+	fclose(ptr_file);
 
 	return 0;
 }

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "file_utils.h"
+#include <sys/stat.h>
 
 void clearScreen();
 
@@ -28,6 +29,9 @@ void printPadding(int padding, int width);
 
 void saveGame(char* filename, int width, int height, int connect, char** gameBoard);
 
+int power(int x, int y);
+
+
 
 int main(int argc, char** argv){
 	struct arguments arguments;
@@ -40,8 +44,13 @@ int main(int argc, char** argv){
 	int connect = 4;
 	char* filename;
 	char* saveFile;
+	char* buffer;
 	char saveFileName[] = "Connect4SaveFile.txt";
-	int i;
+	char c;
+	int i, j, index;
+	int size;
+	FILE* ptr_file;
+	struct stat st;
 
 	//debug
 	printf("\nEntered main");
@@ -58,9 +67,95 @@ int main(int argc, char** argv){
 	printf("\n\n%s", filename);
 	
 	if (filename != NULL){
+		/* Set all parameters to 0 */
+		width = 0;
+		height = 0;
+		connect = 0;
+		//debug
+		printf("\nWE ARE LOADING A GAME!");
+
 		//load game
-		//TODO implement load game. figure out read_file method
+		ptr_file = fopen(filename, "r");
+
+		/* Check that file has been opened */
+		if (!ptr_file){
+			fprintf(stderr, "Input file could not be opened.");
+		}
+
+		/* Get file size */
+		stat(filename, &st);
+		size = st.st_size;
+
+		buffer = malloc(sizeof(char) * size);
+
+		/* Read from file and store into buffer */
+		fgets(buffer, size, ptr_file);
+
+		/* Translate buffer into game parameters and board positions */
+		c = buffer[0];
+		// get width
+		index = 1;
+		while (c!=' '){
+			//debug
+			printf("\nwidth is %d", width);
+			width = width * 10;
+			width += c - '0';
+			c = buffer[index];
+			index++;
+			//debug
+			printf("\nwidth is now %d\n", width);
+		}
+		//debug
+		printf("\nC is %c after width", c);
+		c = buffer[index];
+		index++;
+		//debug
+		printf("\nC is %c after buffer[index]\n\n\n", c);
+		while (c!=' '){
+			height = height * 10;
+			height += c - '0';
+			c = buffer[index];
+			index++;
+		}
+		c = buffer[index];
+		index++;
+		while (c!=' '){
+			connect = connect * 10;
+			connect += c - '0';
+			c = buffer[index];
+			index++;
+		}
+		c = buffer[index];
+		index++;
+		
+		//debug
+		for (i=index-1; i<(index+height*width); i++){
+			printf("%d:%c\n", i, buffer[i]);
+		}
+		
+		/* Place gameboard in memory */
+		gameBoard = (char**)malloc(sizeof(char*) * width);
+		for (i=0; i < width; i++){
+			gameBoard[i] = malloc(sizeof(char) * height);
+		}
+
+		/* Initialize gameboard with values from file */
+		for (i=0; i<height; i++){
+			for (j=0; j<width; j++){
+				//debug
+				printf("Index: %d, C:%c ", index, c);
+				gameBoard[j][i] = c;
+				c = buffer[index];
+				//debug
+				printf("C has been assigned to %c\n", c);
+				index++;
+			}
+			
+		}
 	} else {
+		//debug
+		printf("\nIn else loop after filename == NULL");
+
 		if (arguments.square != 0){
 			width = arguments.square;
 			height = arguments.square;
@@ -70,35 +165,36 @@ int main(int argc, char** argv){
 			if (arguments.height != 0)
 				height = arguments.height;
 		}
-	
+
 		//debug
 		printf("\nbefore arguments.connect call");
 
 		if (arguments.connect != 0)
 			connect = arguments.connect;
-	}
-	//debug
-	printf("\n%d", connect);
-	printf("\nWidth %d  Height %d  Connect %d", width, height, connect);
-	printf("\nTestline");
-	printf("Is connect > width? %d", connect > width);
 	
-	if(connect > width && connect > height){
-		clearScreen();
-		printf("A %d-piece long string will not fit on a %d by %d size board. Nobody can win!\n\n\n", connect, width, height);
-		return 0;
-	}
-
-	gameBoard = (char**)malloc(sizeof(char*) * width);
-	for (i=0; i < width; i++){
-		gameBoard[i] = malloc(sizeof(char) * height);
-	}
-
-	//debug
-	printf("GameBoard: w=%d, h=%d, c=%d\n\n\n", width, height, connect);
-
-	resetBoard(gameBoard, width, height);
+		//debug
+		printf("\n%d", connect);
+		printf("\nWidth %d  Height %d  Connect %d", width, height, connect);
+		printf("\nTestline");
+		printf("Is connect > width? %d", connect > width);
+		
+		if(connect > width && connect > height){
+			clearScreen();
+			printf("A %d-piece long string will not fit on a %d by %d size board. Nobody can win!\n\n\n", connect, width, height);
+			return 0;
+		}
 	
+		gameBoard = (char**)malloc(sizeof(char*) * width);
+		for (i=0; i < width; i++){
+			gameBoard[i] = malloc(sizeof(char) * height);
+		}
+	
+		//debug
+		printf("GameBoard: w=%d, h=%d, c=%d\n\n\n", width, height, connect);
+	
+		resetBoard(gameBoard, width, height);
+	}
+
 	*userInput = 'x';
 
 	while (*userInput != 'n'){
@@ -113,11 +209,11 @@ int main(int argc, char** argv){
 		scanf(" %s", userInput);
 
 		//debug
-		//printf("\nUser input: %c\n", userInput);
+		printf("\nUser input: %c\n", *userInput);
 		validateUserInput(userInput, width, gameBoard);
 
 		//debug
-		//printf("\nReturned to main");
+		printf("\nReturned to main");
 
 		if (*userInput == 'q'){
 			cleanup(gameBoard, height, userInput);
@@ -125,6 +221,8 @@ int main(int argc, char** argv){
 		}
 
 		if (*userInput == 's'){
+			//debug
+			printf("\nJust before SaveGame. W:%d H:%d C:%d SFN:%s", width, height, connect, saveFileName);
 			saveGame(saveFileName, width, height, connect, gameBoard);
 			printf("\n\nYour game has been saved in the file %s\n\nType 'c' to continue...", saveFileName);
 			scanf(" %s", userInput);
@@ -475,59 +573,84 @@ int boardFull(char** gameBoard, int width, int height){
 	return 1;
 }
 
+int power(int x, int y){
+	int val = x;
+	int i = y;
+	if (y == 0)
+		return 1;
+	if (y == 1)
+		return val;
+	while (i>1){
+		val = val * x;
+		i--;
+	}
+	return val;
+}
+
+
 void saveGame(char* filename, int width, int height, int connect, char** gameBoard){
-	int i, j, k;
+
+	int i, j, k, back, index;
 	char* buffer;
 	int w = width;
 	int h = height;
 	int c = connect;
 
+	//debug
+	printf("\nEntered SaveGame");
+
 	//malloc the file contents
 	buffer = (char*)malloc(sizeof(char) * ( (height * width) + 20));
 
-	//index
-	i = 0;
-	do {
-		buffer[i] = (char)((w % 10) + '0');
-		i++;
-		w = w / 10;
-	} while (w != 0);
+	index = 0;
 
-	buffer[i] = ' ';
-	i++;
+	//width
+	for(i=0; (w/10)!=0; i++){
+		back = w%10;
+		buffer[index]=(back*power(10,i)+48);
+		index++;
+		w = w/10;
+	}
+	buffer[index] = ' ';
+	index++;
 
-	do {
-		buffer[i] = (char)((h % 10) + '0');
-		i++;
-		h = h / 10;
-	} while (h != 0);
+	//height
+	for(i=0; (h/10)!=0; i++){
+		back = h%10;
+		buffer[index]=(back*power(10,i)+48);
+		index++;
+		h = h/10;
+	}
+	buffer[index] = ' ';
+	index++;
 
-	buffer[i] = ' ';
-	i++;
-
-	do {
-		buffer[i] = (char)((c % 10) + '0');
-		i++;
-		c = c / 10;
-	} while (c != 0);
-
-	buffer[i] = ' ';
-	i++;
+	//connect
+	for(i=0; (c/10)!=0; i++){
+		back = c%10;
+		buffer[index]=(back*power(10,i)+48);
+		index++;
+		c = c/10;
+	}
+	buffer[index] = ' ';
+	index++;
 
 	for (j=0; j<height; j++){
 		for (k=0; k<width; k++){
-			buffer[i] = gameBoard[k][j];
-			i++;
+			buffer[index] = gameBoard[k][j];
+			index++;
 		}
 	}
 
-	buffer[i] = '\0';
+	buffer[index] = '\0';
 	
 	printf("\n\n\n");
-	for (i=0; i<20; i++){
+	for (i=0; i<(height * width + 20); i++){
 		printf("%c", buffer[i]);
 	}
 	printf("\n\n\n");
 
 	write_file(filename, buffer, ((height * width) + 20));
+	
+	free(buffer);
+
 }	
